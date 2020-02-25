@@ -3,6 +3,17 @@ import json
 import urllib
 from bs4 import BeautifulSoup
 
+headers = {
+    "accept":
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
+    "cache-control": "max-age=0",
+    "content-type": "application/x-www-form-urlencoded",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
+    "sec-fetch-user": "?1",
+    "upgrade-insecure-requests": "1"
+}
 
 class Session:
 
@@ -19,17 +30,6 @@ class Session:
             "authCode": ""
         }
         self.request_session = requests.Session()
-        headers = {
-            "accept":
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
-            "cache-control": "max-age=0",
-            "content-type": "application/x-www-form-urlencoded",
-            "sec-fetch-mode": "navigate",
-            "sec-fetch-site": "same-origin",
-            "sec-fetch-user": "?1",
-            "upgrade-insecure-requests": "1"
-        }
         login_response = self.request_session.post(login_url, headers=headers, data=login_data)
         self.load_data()
     
@@ -117,4 +117,8 @@ class Lesson:
         lesson_begin_data = self.request_session.get(lesson_begin_url, headers=self.course_headers)
 
     def submit_record(self):
-        save_record_data_raw = '{{"p":{{"userId":"{}","gcId":"{}","duration":0,"frameNumber":0,"isComplete":true,"answerRecord":"","userName":"{}","cwId":"{}","rightRate":0}},"m":"r_saveStudyAnswerRecord_request"}}'.format(str(self.user_id), str(self.stu_cid), nickname, str(self.stu_cwid))
+        save_record_data_raw = '{{"p":{{"userId":"{}","gcId":"{}","duration":0,"frameNumber":0,"isComplete":true,"answerRecord":"","userName":"{}","cwId":"{}","rightRate":0}},"m":"r_saveStudyAnswerRecord_request"}}'.format(str(self.user_id), str(self.stu_cid), self.nickname, str(self.stu_cwid))
+        save_record_data_encode = urllib.parse.quote(save_record_data_raw.encode('utf-8', 'replace'))
+        save_record_data = 'data={}'.format(save_record_data_encode)
+        invoke_url = 'http://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(self.ticket)
+        save_record_response = self.request_session.post(invoke_url, headers=headers, data=save_record_data)
