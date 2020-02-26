@@ -20,8 +20,5 @@ def __check_range(response, acceptance):
     if response in acceptance:
         return True
     else:
-        temp = "["
-        for item in acceptance:
-            temp = temp + item + ","
-        print("You have to enter in the range " + temp + "\b]")
+        print("You have to enter in the range " + acceptance.__str__())
         return False
