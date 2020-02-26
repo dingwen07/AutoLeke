@@ -32,6 +32,9 @@ finally:
         if not (selection.lower() == 'y' or selection == ''):
             username = input('Username: ')
             password = getpass()
+    else:
+        username = input('Username: ')
+        password = getpass()
 
 s = leke.Session(username, password)
 
