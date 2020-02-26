@@ -1,3 +1,4 @@
+import global_library
 import leke
 import time
 import random
@@ -41,7 +42,7 @@ print('支持以下几种模式:')
 print('[0] 鸡血模式: 快速完成所有课程的学习.')
 print('[1] 修仙模式: 昼夜不停的模拟真人完成所有课程的学习.')
 print('[2] 禅模式: 自定义学习时间，只在学习时间内完成所有课程的学习. (NOT YET IMPLEMENTED)')
-mode = int(input('输入你的选择: '))
+mode = int(global_library.input_check('输入你的选择: ', int, [0, 1, 2]))
 
 while True:
     s.load_data()
