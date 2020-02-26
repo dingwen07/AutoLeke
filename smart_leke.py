@@ -27,7 +27,6 @@ while True:
                 if(i.status < 3 and i.total_duration != None):
                     print('{}: {}'.format(o.name, i.name))
                     if (mode == 0):
-
                         time.sleep(10)
                         i.submit_record()
                         time.sleep(10)
@@ -36,22 +35,22 @@ while True:
                         print('Delay begin!')
                         delay = int(i.total_duration/1000) + \
                             60 * (5 + random.randint(5, 10))
-                        for i in range(delay, 0, -1):
+                        for c in range(delay, 0, -1):
                             time.sleep(1)
-                            print("\r Countdown... [{}]".format(i), end="")
+                            print("\r Countdown... [{}]".format(c), end="")
                         print('Submit record!')
                         i.submit_record()
                         print('Wait before start next class...\nDelay begin!')
                         delay = 60 * random.randint(10, 20)
-                        for i in range(delay, 0, -1):
+                        for c in range(delay, 0, -1):
                             time.sleep(1)
-                            print("\r Countdown... [{}]".format(i), end="")
+                            print("\r Countdown... [{}]".format(c), end="")
                     else:
                         print('ERR')
                         time.sleep(5)
                         exit()
     print('Wait for one hour...')
     delay = 60 * 60
-    for i in range(delay, 0, -1):
+    for c in range(delay, 0, -1):
         time.sleep(1)
-        print("\r Countdown... [{}]".format(i), end="")
+        print("\r Countdown... [{}]".format(c), end="")
