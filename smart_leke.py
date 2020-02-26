@@ -7,7 +7,7 @@ from getpass import getpass
 def delay_func(delay_time):
     for i in range(delay_time, -1, -1):
         if i % 10 == 9:
-            length =  len('Countdown... [{}]'.format(i)) + 2
+            length =  len('Countdown... [{}]'.format(i)) + 3
             print('\r' + ' ' * length, end='')
         print('\r Countdown... [{}]'.format(i), end='')
         time.sleep(1)
@@ -24,7 +24,7 @@ except:
     credential_available = True
 finally:
     if credential_available:
-        selection = input('Use local credential? [Y/N]?')
+        selection = input('Use local credential? [Y/N]? ')
         if not (selection.lower() == 'y' or selection == ''):
             username = input('Username: ')
             password = getpass()

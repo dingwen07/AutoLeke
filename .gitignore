@@ -128,5 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# IDE
+.vscode
+.idea
+
 # Project specify
 leke_credential.json
