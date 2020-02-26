@@ -3,6 +3,17 @@ import time
 import random
 from getpass import getpass
 
+def delay_func(delay_time):
+    for i in range(delay_time, -1, -1):
+        if i % 10 == 9:
+            length =  len('Countdown... [{}]'.format(i)) + 2
+            print('\r' + ' ' * length, end='')
+        print('\r Countdown... [{}]'.format(i), end='')
+        time.sleep(1)
+    print('\r' + ' ' * 18, end='')
+    print('\r Countdown Finished!')
+
+
 username = input('Username: ')
 password = getpass()
 s = leke.Session(username, password)
@@ -24,33 +35,27 @@ while True:
     for o in s.courses:
         for m in o.lessons:
             for i in m:
-                if(i.status < 3 and i.total_duration != None):
+                if i.status < 3 and i.total_duration != None:
                     print('{}: {}'.format(o.name, i.name))
-                    if (mode == 0):
+                    if mode == 0:
                         time.sleep(10)
                         i.submit_record()
                         time.sleep(10)
-                    elif (mode == 1):
+                    elif mode == 1:
                         i.begin()
                         print('Delay begin!')
                         delay = int(i.total_duration/1000) + \
                             60 * (5 + random.randint(5, 10))
-                        for c in range(delay, 0, -1):
-                            time.sleep(1)
-                            print("\r Countdown... [{}]".format(c), end="")
+                        delay_func(delay)
                         print('Submit record!')
                         i.submit_record()
                         print('Wait before start next class...\nDelay begin!')
                         delay = 60 * random.randint(10, 20)
-                        for c in range(delay, 0, -1):
-                            time.sleep(1)
-                            print("\r Countdown... [{}]".format(c), end="")
+                        delay_func(delay)
                     else:
                         print('ERR')
                         time.sleep(5)
                         exit()
     print('Wait for one hour...')
     delay = 60 * 60
-    for c in range(delay, 0, -1):
-        time.sleep(1)
-        print("\r Countdown... [{}]".format(c), end="")
+    delay_func(delay)

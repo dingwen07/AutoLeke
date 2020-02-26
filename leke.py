@@ -15,10 +15,12 @@ headers = {
     "upgrade-insecure-requests": "1"
 }
 
-class Session:
+class Session(object):
 
+    '''
     request_session = None
     courses = []
+    '''
 
     def __init__(self, login_name, password):
         super().__init__()
@@ -33,6 +35,9 @@ class Session:
         login_response = self.request_session.post(login_url, headers=headers, data=login_data)
         self.load_data()
     
+    def __iter__(self):
+        return SessionIterator(self.courses)
+
     def load_data(self):
         self.courses = []
         course_response = self.request_session.get('https://course.leke.cn/auth/course/common/lesson/getStudentCourses.htm?userId=&hasShowOverCourse=false')
@@ -41,13 +46,15 @@ class Session:
             self.courses.append(Course(self.request_session, item['courseId'], item['courseName']))
 
 
-class Course:
+class Course(object):
 
+    '''
     course_id = 0
     stu_cid = 0
     name = ''
     request_session = None
     lessons = []
+    '''
 
     def __init__(self, request_session, course_id, name):
         super().__init__()
@@ -59,6 +66,9 @@ class Course:
         soup = BeautifulSoup(course_html_response.content, 'html.parser')
         self.stu_cid = int(soup.find(id='jStuCid')['value'])
         self.load_data()
+
+    def __iter__(self):
+        return CourseIterator(self.lessons)
 
     def load_data(self):
         course_html_response = self.request_session.get('https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='.format(str(self.course_id)))
@@ -86,8 +96,9 @@ class Course:
             self.lessons.append(chapter)
 
 
-class Lesson:
+class Lesson(object):
 
+    '''
     ticket = ''
     nickname = ''
     user_id = 0
@@ -98,7 +109,8 @@ class Lesson:
     request_session = None
     name = ''
     course_headers = {}
-    
+    '''
+
     def __init__(self, request_session, course_headers, user_id, stu_cid, stu_cwid, status, total_duration, name):
         super().__init__()
         self.request_session = request_session
@@ -122,3 +134,45 @@ class Lesson:
         save_record_data = 'data={}'.format(save_record_data_encode)
         invoke_url = 'http://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(self.ticket)
         save_record_response = self.request_session.post(invoke_url, headers=headers, data=save_record_data)
+
+class SessionIterator(object):
+
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+        self.now_course = 0
+        self.it = iter(self.data[0])
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self.now_course < len(self.data):
+            try:
+                return(next(self.it))
+            except StopIteration:
+                self.now_course = self.now_course + 1
+                if self.now_course < len(self.data):
+                    self.it = iter(self.data[self.now_course])
+        raise StopIteration
+
+
+class CourseIterator(object):
+
+    def __init__(self, data):
+        super().__init__()
+        self.data = data
+        self.now_chapter = 0
+        self.now_lesson = 0
+    
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while self.now_chapter < len(self.data):
+            while self.now_lesson < len(self.data[self.now_chapter]):
+                self.now_lesson = self.now_lesson + 1
+                return self.data[self.now_chapter][self.now_lesson - 1]
+            self.now_chapter = self.now_chapter + 1
+            self.now_lesson = 0
+        raise StopIteration
