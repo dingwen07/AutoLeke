@@ -1,6 +1,7 @@
 import leke
 import time
 import random
+import json
 from getpass import getpass
 
 def delay_func(delay_time):
@@ -13,9 +14,21 @@ def delay_func(delay_time):
     print('\r' + ' ' * 18, end='')
     print('\r Countdown Finished!')
 
+try:
+    with open('leke_credential.json', 'r') as load_f:
+        load_credential = json.load(load_f)
+    username = load_credential['login_name']
+    password = load_credential['password']
+    credential_available = True
+except:
+    credential_available = True
+finally:
+    if credential_available:
+        selection = input('Use local credential? [Y/N]?')
+        if not (selection.lower() == 'y' or selection == ''):
+            username = input('Username: ')
+            password = getpass()
 
-username = input('Username: ')
-password = getpass()
 s = leke.Session(username, password)
 
 for o in s.courses:
