@@ -38,7 +38,7 @@ temp = 0
 for lesson in course:
     print('[{}] {}'.format(str(temp), lesson.name))
     temp = temp + 1
-lesson_selection = int(global_library.input_check('请选择课时: ', int, range(0, temp + 1)))
+lesson_selection = int(global_library.input_check('请选择课时: ', int, range(0, temp)))
 del temp
 
 lesson = leke.CourseIterator(course.lessons)
