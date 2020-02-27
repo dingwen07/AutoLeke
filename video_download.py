@@ -29,7 +29,7 @@ s = leke.Session(username, password)
 print('你有以下课程:')
 for index in range(0, len(s.courses)):
     print('[{}] {}'.format(str(index), s.courses[index].name))
-course_selection = int(global_library.input_check('请选择课程: ', int, range(0, len(s.courses))))
+course_selection = int(global_library.input_check('请选择课程: ', 1, range(0, len(s.courses)), "你输入的数据有误：数据应该为整数！", "你只能输入 0 ~ "+str(len(s.courses) - 1)+"这个范围内的整数！"))
 
 course = s.courses[course_selection]
 
@@ -38,7 +38,7 @@ temp = 0
 for lesson in course:
     print('[{}] {}'.format(str(temp), lesson.name))
     temp = temp + 1
-lesson_selection = int(global_library.input_check('请选择课时: ', int, range(0, temp)))
+lesson_selection = int(global_library.input_check('请选择课时: ', 1, range(0, temp), "你输入的数据有误：数据应该为整数！", "你只能输入 0 ~ "+str(temp - 1)+"这个范围内的整数！"))
 del temp
 
 lesson = leke.CourseIterator(course.lessons)

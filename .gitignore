@@ -134,3 +134,4 @@ dmypy.json
 
 # Project specify
 leke_credential.json
+.DS_Store
