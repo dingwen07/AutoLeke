@@ -5,7 +5,7 @@ def input_check(prompt, input_type, acceptance):
             try:
                 int(response)
             except ValueError:
-                print("The type of the value you inputted is wrong:\n\tYou need to input the type " + input_type)
+                print("The type of the value you inputted is wrong:\n\tYou need to input the type " + str(input_type))
             else:
                 try:
                     acceptance
