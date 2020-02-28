@@ -145,6 +145,7 @@ class Lesson(object):
         save_record_data = 'data={}'.format(save_record_data_encode)
         invoke_url = 'http://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(self.ticket)
         save_record_response = self.request_session.post(invoke_url, headers=headers, data=save_record_data)
+        return save_record_response
 
 
 class SessionIterator(object):
