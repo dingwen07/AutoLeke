@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 headers = {
     "accept":
-        "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
     "cache-control": "max-age=0",
     "content-type": "application/x-www-form-urlencoded",
@@ -21,7 +21,6 @@ class Session(object):
     request_session = None
     courses = []
     '''
-
     def __init__(self, login_name, password):
         super().__init__()
         login_url = 'https://cas.leke.cn/login?service='
@@ -32,7 +31,9 @@ class Session(object):
             "authCode": ""
         }
         self.request_session = requests.Session()
-        login_response = self.request_session.post(login_url, headers=headers, data=login_data)
+        login_response = self.request_session.post(login_url,
+                                                   headers=headers,
+                                                   data=login_data)
         self.courses = []
         self.load_data()
 
@@ -42,13 +43,23 @@ class Session(object):
     def load_data(self):
         self.courses = []
         course_response = self.request_session.get(
-            'https://course.leke.cn/auth/course/common/lesson/getStudentCourses.htm?userId=&hasShowOverCourse=false')
+            'https://course.leke.cn/auth/course/common/lesson/getStudentCourses.htm?userId=&hasShowOverCourse=false'
+        )
         course_data = json.loads(course_response.content.decode())
         for item in course_data['data']['studentCourses']:
-            self.courses.append(Course(self.request_session, item['courseId'], item['courseName']))
+            if item['courseType'] == 2:
+                self.courses.append(
+                    Course(
+                        self.request_session, {
+                            'course_id': item['courseId'],
+                            'course_type': item['courseType'],
+                            'name': item['courseName']
+                        }))
 
 
 class Course(object):
+
+    data = {}
     '''
     course_id = 0
     stu_cid = 0
@@ -56,18 +67,20 @@ class Course(object):
     request_session = None
     lessons = []
     '''
-
-    def __init__(self, request_session, course_id, name):
+    def __init__(self, request_session, data):
         super().__init__()
-        self.course_id = course_id
-        self.name = name
+        self.data['course_id'] = data['course_id']
+        self.data['name'] = data['name']
+        self.name  = data['name']
+        self.data['course_type'] = data['course_type']
+        self.course_type = data['course_type']
         self.request_session = request_session
         # Get stuCid
         course_html_response = self.request_session.get(
-            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='.format(
-                str(self.course_id)))
+            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='
+            .format(str(self.data['course_id'])))
         soup = BeautifulSoup(course_html_response.content, 'html.parser')
-        self.stu_cid = int(soup.find(id='jStuCid')['value'])
+        self.data['stu_cid'] = int(soup.find(id='jStuCid')['value'])
         self.lessons = []
         self.load_data()
 
@@ -76,16 +89,17 @@ class Course(object):
 
     def load_data(self):
         course_html_response = self.request_session.get(
-            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='.format(
-                str(self.course_id)))
+            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='
+            .format(str(self.data['course_id'])))
         soup = BeautifulSoup(course_html_response.content, 'html.parser')
-        self.stu_cid = int(soup.find(id='jStuCid')['value'])
+        self.data['stu_cid'] = int(soup.find(id='jStuCid')['value'])
         self.lessons = []
         course_referer = 'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='.format(
-            str(self.course_id))
+            str(self.data['course_id']))
         course_headers = {
             "accept": "application/json, text/javascript, */*; q=0.01",
-            "accept-language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
+            "accept-language":
+            "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
             "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-origin",
@@ -93,20 +107,32 @@ class Course(object):
             "referer": course_referer
         }
         course_url = 'https://resource.leke.cn/auth/student/resource/study/groupCourseListData.htm'
-        lesson_response = self.request_session.post(course_url, headers=course_headers,
-                                                    data='stuCid={}&curPage=1&pageSize=999'.format(str(self.stu_cid)))
+        lesson_response = self.request_session.post(
+            course_url,
+            headers=course_headers,
+            data='stuCid={}&curPage=1&pageSize=999'.format(
+                str(self.data['stu_cid'])))
         lesson_data = json.loads(lesson_response.content.decode())
         user_id = lesson_data['datas']['page']['dataList'][0]['modifiedBy']
         for c in lesson_data['datas']['page']['dataList']:
             chapter = []
             for l in c['coursewareList']:
                 chapter.append(
-                    Lesson(self.request_session, course_headers, user_id, self.stu_cid, l['stuCwid'], l['status'],
-                           l['totalDuration'], l['courseName']))
+                    Lesson(
+                        self.request_session, course_headers, {
+                            'user_id': user_id,
+                            'stu_cid': self.data['stu_cid'],
+                            'stu_cwid': l['stuCwid'],
+                            'status': l['status'],
+                            'total_duration': l['totalDuration'],
+                            'name': l['courseName']
+                        }))
             self.lessons.append(chapter)
 
 
 class Lesson(object):
+
+    data = {}
     '''
     ticket = ''
     nickname = ''
@@ -119,37 +145,45 @@ class Lesson(object):
     name = ''
     course_headers = {}
     '''
-
-    def __init__(self, request_session, course_headers, user_id, stu_cid, stu_cwid, status, total_duration, name):
+    def __init__(self, request_session, course_headers, data):
         super().__init__()
         self.request_session = request_session
         self.course_headers = course_headers
-        self.user_id = user_id
-        self.stu_cid = stu_cid
-        self.stu_cwid = stu_cwid
-        self.status = status
-        self.total_duration = total_duration
-        self.name = name
+        self.data['user_id'] = data['user_id']
+        self.data['stu_cid'] = data['stu_cid']
+        self.data['stu_cwid'] = data['stu_cwid']
+        self.data['status'] = data['status']
+        self.status = data['status']
+        self.data['total_duration'] = data['total_duration']
+        self.total_duration = data['total_duration']
+        self.data['name'] = data['name']
+        self.name = data['name']
         self.ticket = self.request_session.cookies.get('ticket')
-        self.nickname = urllib.parse.unquote(self.request_session.cookies.get('_nk_'))
+        self.nickname = urllib.parse.unquote(
+            self.request_session.cookies.get('_nk_'))
 
     def begin(self):
         lesson_begin_url = 'https://resource.leke.cn/auth/student/resource/study/studyCourseware.htm?stuCwid={}&stuCid={}'.format(
-            str(self.stu_cwid), str(self.stu_cid))
-        lesson_begin_data = self.request_session.get(lesson_begin_url, headers=self.course_headers)
+            str(self.data['stu_cwid']), str(self.data['stu_cid']))
+        lesson_begin_data = self.request_session.get(
+            lesson_begin_url, headers=self.course_headers)
 
     def submit_record(self):
         save_record_data_raw = '{{"p":{{"userId":"{}","gcId":"{}","duration":0,"frameNumber":0,"isComplete":true,"answerRecord":"","userName":"{}","cwId":"{}","rightRate":0}},"m":"r_saveStudyAnswerRecord_request"}}'.format(
-            str(self.user_id), str(self.stu_cid), self.nickname, str(self.stu_cwid))
-        save_record_data_encode = urllib.parse.quote(save_record_data_raw.encode('utf-8', 'replace'))
+            str(self.data['user_id']), str(self.data['stu_cid']),
+            self.nickname, str(self.data['stu_cwid']))
+        save_record_data_encode = urllib.parse.quote(
+            save_record_data_raw.encode('utf-8', 'replace'))
         save_record_data = 'data={}'.format(save_record_data_encode)
-        invoke_url = 'http://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(self.ticket)
-        save_record_response = self.request_session.post(invoke_url, headers=headers, data=save_record_data)
+        invoke_url = 'http://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(
+            self.ticket)
+        save_record_response = self.request_session.post(invoke_url,
+                                                         headers=headers,
+                                                         data=save_record_data)
         return save_record_response
 
 
 class SessionIterator(object):
-
     def __init__(self, data):
         super().__init__()
         self.data = data
@@ -171,7 +205,6 @@ class SessionIterator(object):
 
 
 class CourseIterator(object):
-
     def __init__(self, data):
         super().__init__()
         self.data = data
