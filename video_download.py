@@ -69,7 +69,7 @@ while confirm.upper() == "Y" or confirm.upper() == "YES":
     lesson = next(lesson)
     lesson.begin()
     save_record_data_raw = '{{"p":{{"flag":1,"userId":"{}","gcId":"{}","userName":"{}","cwId":"{}","lockForEdit":"0"}},"m":"r_loadCourseware_request"}}'.format(
-        str(lesson.user_id), str(lesson.stu_cid), lesson.nickname, str(lesson.stu_cwid))
+        str(lesson.data['user_id']), str(lesson.data['stu_cid']), lesson.nickname, str(lesson.data['stu_cwid']))
     save_record_data_encode = urllib.parse.quote(save_record_data_raw.encode('utf-8', 'replace'))
     save_record_data = 'data={}'.format(save_record_data_encode)
     invoke_url = 'https://resource.leke.cn/api/w/res/invoke.htm?ticket={}'.format(lesson.ticket)
