@@ -68,7 +68,7 @@ class Course(object):
     '''
     def __init__(self, request_session, data):
         super().__init__()
-        data = {}
+        self.data = {}
         self.data['course_id'] = data['course_id']
         self.data['name'] = data['name']
         self.name  = data['name']
