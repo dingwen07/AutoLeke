@@ -59,7 +59,6 @@ class Session(object):
 
 class Course(object):
 
-    data = {}
     '''
     course_id = 0
     stu_cid = 0
@@ -69,6 +68,7 @@ class Course(object):
     '''
     def __init__(self, request_session, data):
         super().__init__()
+        data = {}
         self.data['course_id'] = data['course_id']
         self.data['name'] = data['name']
         self.name  = data['name']
@@ -132,7 +132,6 @@ class Course(object):
 
 class Lesson(object):
 
-    data = {}
     '''
     ticket = ''
     nickname = ''
@@ -147,6 +146,7 @@ class Lesson(object):
     '''
     def __init__(self, request_session, course_headers, data):
         super().__init__()
+        self.data = {}
         self.request_session = request_session
         self.course_headers = course_headers
         self.data['user_id'] = data['user_id']
