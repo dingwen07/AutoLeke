@@ -1,7 +1,6 @@
 import requests
 import json
 import urllib
-from bs4 import BeautifulSoup
 
 headers = {
     "accept":
