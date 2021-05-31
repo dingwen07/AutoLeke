@@ -1,7 +1,6 @@
 import requests
 import json
 import urllib
-from bs4 import BeautifulSoup
 
 headers = {
     "accept":
@@ -71,16 +70,31 @@ class Course(object):
         self.data = {}
         self.data['course_id'] = data['course_id']
         self.data['name'] = data['name']
-        self.name  = data['name']
+        self.name = data['name']
         self.data['course_type'] = data['course_type']
         self.course_type = data['course_type']
         self.request_session = request_session
         # Get stuCid
-        course_html_response = self.request_session.get(
-            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='
-            .format(str(self.data['course_id'])))
-        soup = BeautifulSoup(course_html_response.content, 'html.parser')
-        self.data['stu_cid'] = int(soup.find(id='jStuCid')['value'])
+        self.course_referer = 'https://webapp.leke.cn/page/ltcr/mall/my-lesson-detail?courseId={}'.format(
+            str(self.data['course_id']))
+        self.course_headers = {
+            "accept": "application/json, text/javascript, */*; q=0.01",
+            "accept-language":
+                "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6",
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-requested-with": "XMLHttpRequest",
+            "referer": self.course_referer
+        }
+        self.course_url = 'https://webapp.leke.cn/proxy/resource/auth/student/resource/study/groupStudentCourseListDataNew.htm'
+        post_data = json.loads('{"courseId": "","lastNodeId": 0,"pageSize": 10}')
+        post_data['courseId'] = str(self.data['course_id'])
+        self.lesson_response = self.request_session.post(
+            self.course_url,
+            headers=self.course_headers,
+            data=json.dumps(post_data))
+        self.data['stu_cid'] = json.loads(self.lesson_response.content.decode())['data'][0]['singleCourseList'][0]['stuCid']
         self.lessons = []
         self.load_data()
 
@@ -88,12 +102,8 @@ class Course(object):
         return CourseIterator(self.lessons)
 
     def load_data(self):
-        course_html_response = self.request_session.get(
-            'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='
-            .format(str(self.data['course_id'])))
-        soup = BeautifulSoup(course_html_response.content, 'html.parser')
-        self.data['stu_cid'] = int(soup.find(id='jStuCid')['value'])
-        self.lessons = []
+        post_data = json.loads('{"courseId": "","lastNodeId": 0,"pageSize": 10}')
+        post_data['courseId'] = str(self.data['course_id'])
         course_referer = 'https://resource.leke.cn/auth/student/resource/study/studyCourseDetail.htm?courseId={}&userId='.format(
             str(self.data['course_id']))
         course_headers = {
